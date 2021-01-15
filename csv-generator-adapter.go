@@ -6,7 +6,18 @@ import (
 	"fmt"
 )
 
+// ------ DummyCSVGeneratorAdapter -----
+type DummyCSVGeneratorAdapter struct {}
+func (a *DummyCSVGeneratorAdapter) BeforeOutputCSV() {}
+func (a *DummyCSVGeneratorAdapter) GetWriter() io.Writer { return nil; }
+func (a *DummyCSVGeneratorAdapter) GetTitles() []string { return nil; }
+func (a *DummyCSVGeneratorAdapter) GetRows() (<-chan interface{}) { return nil; }
+func (a *DummyCSVGeneratorAdapter) BeforeOutputRow(row interface{}) {}
+func (a *DummyCSVGeneratorAdapter) GetColValue(row interface{}, idx int, title string) string { return ""; }
+
+// ------ CSVGeneratorAdapter ------
 type CSVGeneratorAdapter struct {
+	DummyCSVGeneratorAdapter
 }
 
 func (a *CSVGeneratorAdapter) BeforeOutputCSV() {

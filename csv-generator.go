@@ -32,29 +32,50 @@ type CSVGenerator interface {
 }
 
 func GenerateCSV(cg CSVGenerator) {
-	fCsv := csv.NewWriter(cg.GetWriter())
 	cg.BeforeOutputCSV()
 
+	writer := cg.GetWriter()
+	if writer == nil {
+		return
+	}
+
 	titles := cg.GetTitles()
-	if len(titles) > 0 {
-		oldTitle0 := titles[0]
-		hasBOM := strings.HasPrefix(oldTitle0, utf8_bom)
-		if !hasBOM {
-			titles[0] = fmt.Sprintf("%s%s", utf8_bom, oldTitle0)
-		}
-		fCsv.Write(titles)
-		if !hasBOM {
-			titles[0] = oldTitle0
-		}
+	if len(titles) == 0 {
+		return
+	}
+
+	fCsv := csv.NewWriter(writer)
+	defer fCsv.Flush()
+	outputTitles(fCsv, titles)
+
+	rows := cg.GetRows()
+	if rows == nil {
+		return
 	}
 
 	row := make([]string, len(titles))
-	for d := range cg.GetRows() {
-		cg.BeforeOutputRow(d)
-		for i, title := range titles {
-			row[i] = cg.GetColValue(d, i, title)
-		}
-		fCsv.Write(row)
+	for d := range rows {
+		outputRow(cg, fCsv, d, row, titles)
 	}
-	fCsv.Flush()
+}
+
+func outputTitles(fCsv *csv.Writer, titles []string) {
+	oldTitle0 := titles[0]
+	hasBOM := strings.HasPrefix(oldTitle0, utf8_bom)
+	if !hasBOM {
+		titles[0] = fmt.Sprintf("%s%s", utf8_bom, oldTitle0)
+	}
+
+	fCsv.Write(titles)
+	if !hasBOM {
+		titles[0] = oldTitle0
+	}
+}
+
+func outputRow(cg CSVGenerator, fCsv *csv.Writer, row interface{}, outRow []string, titles []string) {
+		cg.BeforeOutputRow(row)
+		for i, title := range titles {
+			outRow[i] = cg.GetColValue(row, i, title)
+		}
+		fCsv.Write(outRow)
 }
