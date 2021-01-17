@@ -22,13 +22,7 @@ type CSVGenerator interface {
 	GetTitles() []string
 
 	// 获取所有的输出行channel
-	GetRows() (<-chan interface{})
-
-	/// 在输出每行之前调用，在这里可以做一些判断条件收集
-	BeforeOutputRow(row interface{})
-
-	/// 获取某一列的值
-	GetColValue(row interface{}, idx int, title string) string
+	GetRows() (<-chan map[string]string)
 }
 
 func GenerateCSV(cg CSVGenerator) {
@@ -64,7 +58,7 @@ func GenerateCSV(cg CSVGenerator) {
 
 	row := make([]string, len(titles))
 	for d := range rows {
-		outputRow(cg, fCsv, d, row, titles)
+		outputRow(fCsv, d, row, titles)
 	}
 }
 
@@ -81,10 +75,13 @@ func outputTitles(fCsv *csv.Writer, titles []string) {
 	}
 }
 
-func outputRow(cg CSVGenerator, fCsv *csv.Writer, row interface{}, outRow []string, titles []string) {
-		cg.BeforeOutputRow(row)
+func outputRow(fCsv *csv.Writer, row map[string]string, outRow []string, titles []string) {
 		for i, title := range titles {
-			outRow[i] = cg.GetColValue(row, i, title)
+			if col, ok := row[title]; ok {
+				outRow[i] = col
+			} else {
+				outRow[i] = ""
+			}
 		}
 		fCsv.Write(outRow)
 }

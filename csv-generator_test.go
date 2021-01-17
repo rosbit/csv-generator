@@ -28,13 +28,18 @@ type csvTest struct {
 func (t *csvTest) BeforeOutputCSV() {
 }
 
-func (t *csvTest) BeforeOutputRow(row interface{}) {
-}
+func (t *csvTest) GetRows() (<-chan map[string]string) {
+	rows := make(chan map[string]string)
+	go func() {
+		for i := 0; i < 10; i++ {
+			row := make(map[string]string)
+			for j := 0; j < 3; j++ {
+				row[fmt.Sprintf("%c", 'a'+j)] = fmt.Sprintf("%c_%d_%d", 'a'+j, i+1, j+1)
+			}
+			rows <- row
+		}
+		close(rows)
+	}()
 
-func (t *csvTest) GetColValue(row interface{}, idx int, title string) string {
-	realRow, ok := row.([]string)
-	if !ok {
-		return ""
-	}
-	return fmt.Sprintf("%s_%d_%s", title, idx, realRow[idx])
+	return rows
 }
