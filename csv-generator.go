@@ -34,6 +34,19 @@ type CSVGenerator interface {
 func GenerateCSV(cg CSVGenerator) {
 	cg.BeforeOutputCSV()
 
+	rowsHandled := false
+	rows := cg.GetRows()
+	if rows == nil {
+		return
+	}
+	defer func() {
+		if rowsHandled {
+			return
+		}
+		// rows必须读完，防止channel堵塞
+		for _ = range rows {}
+	}()
+
 	writer := cg.GetWriter()
 	if writer == nil {
 		return
@@ -47,11 +60,7 @@ func GenerateCSV(cg CSVGenerator) {
 	fCsv := csv.NewWriter(writer)
 	defer fCsv.Flush()
 	outputTitles(fCsv, titles)
-
-	rows := cg.GetRows()
-	if rows == nil {
-		return
-	}
+	rowsHandled = true
 
 	row := make([]string, len(titles))
 	for d := range rows {
