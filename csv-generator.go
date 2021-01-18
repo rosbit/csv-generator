@@ -76,12 +76,12 @@ func outputTitles(fCsv *csv.Writer, titles []string) {
 }
 
 func outputRow(fCsv *csv.Writer, row map[string]string, outRow []string, titles []string) {
-		for i, title := range titles {
-			if col, ok := row[title]; ok {
-				outRow[i] = col
-			} else {
-				outRow[i] = ""
-			}
+	for i, title := range titles {
+		if col, ok := row[title]; ok {
+			outRow[i] = col
+		} else {
+			outRow[i] = ""
 		}
-		fCsv.Write(outRow)
+	}
+	fCsv.Write(outRow)
 }
