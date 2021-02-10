@@ -1,3 +1,3 @@
-module gitlab.foundingaz.cn/tools/csv-generator
+module github.com/rosbit/csv-generator
 
 go 1.15
